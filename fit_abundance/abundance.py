@@ -130,7 +130,7 @@ def abundance(name,
     # --- Calibrators
     
     ## PP04 calibrator with O3N2 (Pettini & Pagel 2004)
-    O3N2_PP04 = np.where((-100.0 <= O3N2_index) & (O3N2_index <= 100.9), 8.73 - 0.32*O3N2_index, np.nan)
+    O3N2_PP04 = np.where((-1.0 <= O3N2_index) & (O3N2_index <= 1.9), 8.73 - 0.32*O3N2_index, np.nan)
     eO3N2_PP04 = np.where(np.isfinite(O3N2_PP04), 0.32*eO3N2_index, np.nan)
     
     ## PP04 calibrator with N2 (Pettini & Pagel 2004)
