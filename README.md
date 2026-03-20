@@ -31,6 +31,17 @@ The following strong-line calibrators are implemented:
 
 ---
 
+## Implemented selection criteria for H II regions
+
+- **ST06** : Stasińska et al. (2006)
+- **KA03** : Kauffmann et al. (2003)
+- **KE01** : Kewley et al. (2001)
+- **KE6A** : Kewley et al. (2001) with EW(Hα) ≥ 6 Å
+- **CF11** : Cid Fernandes et al. (2011)
+- **EP20** : Espinosa-Ponce et al. (2020)
+
+---
+
 ## Testing
 
 To ensure scientific integrity and code reliability, we provide a suite of automated tests.
@@ -54,8 +65,8 @@ pytest
 Clone the repository:
 
 ```bash
-git clone https://github.com/Andre-FS-Cardoso/fit_abundance.git
-cd fit_abundance
+git clone https://github.com/Andre-FS-Cardoso/fit-abundance.git
+cd fit-abundance
 ```
 
 Install the required dependencies:
@@ -113,9 +124,11 @@ Optionally, it can generate:
 
 ---
 
-## Author
+## Authors
 
 André Felipe de Siqueira Cardoso
+
+Oscar Cavichia
 
 ---
 
@@ -123,7 +136,7 @@ André Felipe de Siqueira Cardoso
 
 If you use this software in scientific work, please cite:
 
-Cardoso, A. F. S. (2026)
+Cardoso, A. F. S. and Cavichia, O. (2026)
 
 *fit_abundance: A Python tool for fitting oxygen abundance gradients in galaxies*
 
