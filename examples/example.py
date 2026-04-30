@@ -3,7 +3,7 @@ import pandas as pd
 
 ###############################################################################
 
-galaxy_data = pd.read_csv("./examples/data_NGC0309.csv")
+galaxy_data = pd.read_csv("data_NGC0309.csv")
 
 name = galaxy_data["galaxy"].iloc[0]
 ra0 = galaxy_data["ra0"].iloc[0]
@@ -15,7 +15,7 @@ d = galaxy_data["dist"].iloc[0]
 
 ###############################################################################
 
-flux = pd.read_csv("./examples/HII.NGC0309.flux_elines.csv")
+flux = pd.read_csv("HII.NGC0309.flux_elines.csv")
 
 ra = flux["RA"]
 dec = flux["DEC"]
