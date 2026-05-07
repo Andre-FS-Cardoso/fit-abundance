@@ -25,9 +25,20 @@ The following strong-line calibrators are implemented:
 
 - **PP04 (O3N2)** — Pettini & Pagel (2004)
 - **PP04 (N2)** — Pettini & Pagel (2004)
+- **PP04 (N2) polynomial** — Pettini & Pagel (2004)
 - **M13 (O3N2)** — Marino et al. (2013)
 - **M13 (N2)** — Marino et al. (2013)
 - **D16** — Dopita et al. (2016)
+- **T04** — Tremonti et al. (2004)
+- **KD02** — Kewley and Dopita (2002)
+- **P10_ONS** — Pilyugin et al. (2010)
+- **P10_ON** — Pilyugin et al. (2010)
+- **PM11** — Pilyugin and Mattsson (2011)
+- **PG16_R** — Pilyugin and Grebel (2016)
+- **PG16_S** — Pilyugin and Grebel (2016)
+- **NH_PG16_R** — Pilyugin and Grebel (2016)
+- **NO_PG16_R** — Pilyugin and Grebel (2016)
+- **NO_F22** — Florido et al. (2022)
 
 ---
 
@@ -120,6 +131,7 @@ Optionally, it can generate:
 
 - tables of selected HII regions
 - tables with model-selection statistics
+- plot of BPT diagram
 - plots of the abundance gradient
 
 ---
