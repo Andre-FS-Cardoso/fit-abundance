@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from models import fit_models
+from fit_abundance.models import fit_models
 
 def test_select_linear_model():
     """Generates linear data with noise and checks whether AIC selects the simple model"""
