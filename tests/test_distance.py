@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from distance import distances
+from fit_abundance.distance import distances
 
 def test_center_is_zero():
     """Checks whether the galaxy center results in r = 0"""
