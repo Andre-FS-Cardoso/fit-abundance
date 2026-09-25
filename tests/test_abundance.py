@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from abundance import abundance
+from fit_abundance.abundance import abundance
 
 def test_calibrator_values():
     """Checks whether the calibrators return physically plausible values"""
