@@ -25,7 +25,7 @@ def plot_model(
     calibrator : int
         Abundance calibrator identifier.
     save_graph : bool
-        If True, saves the fit plots.
+        If True, saves the fit plot.
     show_graph : bool
         If True, displays the fit plot.
 
@@ -41,6 +41,7 @@ def plot_model(
     best_case = results_dict['best_case']
 
     fig, ax = plt.subplots()
+    
     ax.errorbar(x, y, ey, fmt='o',
                 color='black', 
                 markerfacecolor='mediumslateblue',
@@ -173,42 +174,44 @@ def plot_model(
     ax.tick_params(which='major', direction='in', length=4.0, width=0.7, colors='black', grid_color='gray', grid_alpha=0.9)
     ax.tick_params(which='minor', direction='in', length=2.0, width=0.5, colors='black', grid_color='gray', grid_alpha=0.9)
     
-    if save_graph:
+    ## Generate the fit plot
     
-        if calibrator == 1:
-            calib = 'PP04_O3N2'
-        elif calibrator == 2:
-            calib = 'PP04_N2'
-        elif calibrator == 3:
-            calib = 'PP04_N2_poly'
-        elif calibrator == 4:
-            calib = 'M13_O3N2'
-        elif calibrator == 5:
-            calib = 'M13_N2'
-        elif calibrator == 6:
-            calib = 'D16'
-        elif calibrator == 7:
-            calib = 'T04'
-        elif calibrator == 8:
-            calib = 'KD02'
-        elif calibrator == 9:
-            calib = 'P10_ONS'
-        elif calibrator == 10:
-            calib = 'P10_ON'
-        elif calibrator == 11:
-            calib = 'PM11'
-        elif calibrator == 12:
-            calib = 'PG16_R'
-        elif calibrator == 13:
-            calib = 'PG16_S'
-        elif calibrator == 14:
-            calib = 'NH_PG16_R'
-        elif calibrator == 15:
-            calib = 'NO_PG16_R'
-        elif calibrator == 16:
-            calib = 'NO_F22'
-        else:
-            raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R, 16=NO_F22.")
+    if calibrator == 1:
+        calib = 'PP04_O3N2'
+    elif calibrator == 2:
+        calib = 'PP04_N2'
+    elif calibrator == 3:
+        calib = 'PP04_N2_poly'
+    elif calibrator == 4:
+        calib = 'M13_O3N2'
+    elif calibrator == 5:
+        calib = 'M13_N2'
+    elif calibrator == 6:
+        calib = 'D16'
+    elif calibrator == 7:
+        calib = 'T04'
+    elif calibrator == 8:
+        calib = 'KD02'
+    elif calibrator == 9:
+        calib = 'P10_ONS'
+    elif calibrator == 10:
+        calib = 'P10_ON'
+    elif calibrator == 11:
+        calib = 'PM11'
+    elif calibrator == 12:
+        calib = 'PG16_R'
+    elif calibrator == 13:
+        calib = 'PG16_S'
+    elif calibrator == 14:
+        calib = 'NH_PG16_R'
+    elif calibrator == 15:
+        calib = 'NO_PG16_R'
+    elif calibrator == 16:
+        calib = 'NO_F22'
+    else:
+        raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R, 16=NO_F22.")
+        
+    if save_graph:
             
         os.makedirs("graphs", exist_ok=True)
         filepath = os.path.join("graphs", f"{name}_{calib}_{criterion}.png")
@@ -218,6 +221,7 @@ def plot_model(
         
     # Show the plot or not
     if show_graph:
+        ax.set_title(f'{name} - {calib}')
         plt.show(block=True)
     else:
         plt.close(fig)
