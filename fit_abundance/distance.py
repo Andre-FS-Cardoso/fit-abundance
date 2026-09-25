@@ -1,14 +1,16 @@
 import numpy as np
 
-def distances(ra,
-              ra0,
-              dec,
-              dec0,
-              pa,
-              ba,
-              d,
-              re
-              ):
+def distances(
+    ra,
+    ra0,
+    dec,
+    dec0,
+    pa,
+    ba,
+    d,
+    re
+    ):
+    
     """
     Compute deprojected galactocentric distances of HII regions.
 
@@ -44,18 +46,18 @@ def distances(ra,
     """
     
     # --- Convert angles to radians
-    ra = np.asarray(ra) * np.pi / 180
-    dec = np.asarray(dec) * np.pi / 180
-    pa = pa*np.pi/180
-    dec0 = dec0*np.pi/180
-    ra0 = ra0*np.pi/180
+    ra = np.asarray(ra) * np.pi / 180.0
+    dec = np.asarray(dec) * np.pi / 180.0
+    pa = pa*np.pi / 180.0
+    dec0 = dec0*np.pi / 180.0
+    ra0 = ra0*np.pi / 180.0
     
     # --- Inclination correction
-    cos_i = np.sqrt((ba**2-0.13**2)/(1-0.13**2))
+    cos_i = np.sqrt((ba**2 - 0.13**2) / (1 - 0.13**2))
 
     # --- Projected coordinates
-    r1 = -(ra-ra0)*np.sin(pa)*np.cos(dec) + (dec-dec0)*np.cos(pa)
-    r2 = (-(ra-ra0)*np.cos(pa)*np.cos(dec) - (dec-dec0)*np.sin(pa))/cos_i
+    r1 = -(ra - ra0) * np.sin(pa) * np.cos(dec) + (dec - dec0) * np.cos(pa)
+    r2 = (-(ra - ra0) * np.cos(pa) * np.cos(dec) - (dec - dec0) * np.sin(pa)) / cos_i
     
     # --- Convert distance to kpc
     d_kpc = d * 1e3 # Mpc p/ kpc
