@@ -20,8 +20,14 @@ def fit_final(
     eHb4861,
     Ha6562,
     eHa6562,
+    OII3727,
+    eOII3727,
+    OIII4958,
+    eOIII4958,
     OIII5006,
     eOIII5006,
+    NII6548,
+    eNII6548,
     NII6583,
     eNII6583,
     SII6716,
@@ -32,8 +38,11 @@ def fit_final(
     criterion,
     *,
     n_boot=200,
+    n_break=2,
     save_abundance = False,
     save_oh_criteria=False,
+    save_BPT=False,
+    show_graph_bpt=False,
     save_model_selection=False,
     save_graph=False,
     show_graph=False,
@@ -57,10 +66,14 @@ def fit_final(
         Name of the galaxy.
     HIIREGID : array-like
         Identifier of each HII region.
-    ra, dec : array-like
-        Coordinates of the HII regions (degrees).
-    ra0, dec0 : float
-        Coordinates of the galaxy center (degrees).
+    ra : array-like
+        Right ascension of the HII regions (degrees).
+    ra0 : float
+        Right ascension of the galaxy center (degrees).
+    dec : array-like
+        Declination of the HII regions (degrees).
+    dec0 : float
+        Declination of the galaxy center (degrees).
     pa : float
         Position angle of the galaxy (degrees).
     ba : float
@@ -69,16 +82,34 @@ def fit_final(
         Distance to the galaxy (Mpc).
     re : float
         Effective radius of the galaxy (kpc).
+    EWHa : array-like
+        Equivalent width of Hα (Å).
+    Hb4861, Ha6562, OII3727, OIII4958, OIII5006, NII6548, NII6583, SII6716, SII6730 : array-like
+        Emission-line fluxes.
+    eHb4861, eHa6562m eOII3727, eOIII4958, eOIII5006, eNII6548, eNII6583, eSII6716, eSII6730 : array-like
+        Flux uncertainties.
     calibrator : int
         Abundance calibrator identifier.
     criterion : str
         Selection criterion for HII regions.
-    save_table : bool
-        Save filtered HII region table.
+    n_boot : int
+        Number of bootstrap iterations to be performed. By default, n_boot = 200.
+    n_break : int
+        Number of breaks to be fitted. By default, n_break = 2.
+    save_abundance : bool
+        If True, saves all corrected fluxes and abundances, along with their respective errors, to a CSV file.
+    save_oh_criteria : bool
+        If True, saves the abundances for a given criterion, along with their respective errors, to a CSV file.
+    save_BPT : bool
+        If True, save the BPT diagram plot.
+    show_graph_bpt:
+        If True, displays the BPT diagram plot.
+    save_model_selection : bool
+        If True, saves the table containing the statistical information of the model fits to a CSV file.
     save_graph : bool
-        Save gradient plot.
+        If True, saves the fit plots.
     show_graph : bool
-        Display the plot.
+        If True, displays the fit plot.
 
     Returns
     -------
@@ -99,7 +130,10 @@ def fit_final(
         name, x, HIIREGID, EWHa,
         Hb4861, eHb4861,
         Ha6562, eHa6562,
+        OII3727, eOII3727,
+        OIII4958, eOIII4958,
         OIII5006, eOIII5006,
+        NII6548, eNII6548,
         NII6583, eNII6583,
         SII6716, eSII6716,
         SII6730, eSII6730,
@@ -118,7 +152,9 @@ def fit_final(
         OIII5006_cor,
         NII6583_cor,
         calibrator,
-        save_oh_criteria
+        save_oh_criteria,
+        save_BPT,
+        show_graph_bpt
         )
     
     # ---------------------------------------------------
@@ -127,7 +163,9 @@ def fit_final(
     results_dict = fit_models(r, oh, eoh,
         name, criterion, calibrator,
         save_model_selection,
-        n_boot=n_boot)
+        n_boot=n_boot,
+        n_break=n_break
+        )
     
     if results_dict is None:
         print(f"Insufficient data for fitting the galaxy {name}.")
@@ -143,7 +181,7 @@ def fit_final(
         calibrator,
         save_graph,
         show_graph
-    )
+        )
 
     print(f"{name} completed.")
 
