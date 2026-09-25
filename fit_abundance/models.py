@@ -3,16 +3,21 @@ import piecewise_regression
 import numpy as np
 import pandas as pd
 import os
+from .calibrators import CALIBRATORS
 
-def fit_models(x_array,
-               y_array,
-               ey_array,
-               name,
-               criterion,
-               calibrator,
-               save_model_selection,
-               n_boot=200
-               ):
+def fit_models(
+    x_array,
+    y_array,
+    ey_array,
+    name,
+    criterion,
+    calibrator,
+    save_model_selection,
+    *,
+    n_boot=200,
+    n_break=2
+    ):
+    
     """
     Fit oxygen abundance gradients using linear and piecewise models.
 
@@ -33,6 +38,18 @@ def fit_models(x_array,
         Oxygen abundance (12 + log(O/H)).
     ey_array : array-like
         Abundance uncertainty.
+    name : str
+        Name of the galaxy.
+    criterion : str
+        Identifier of the selection criterion.
+    calibrator : int
+        Abundance calibrator identifier.
+    save_model_selection : bool
+        If True, saves the table containing the statistical information of the model fits to a CSV file.
+    n_boot : int
+        Number of bootstrap iterations to be performed. By default, n_boot = 200.
+    n_break : int
+        Number of breaks to be fitted. By default, n_break = 2.
 
     Returns
     -------
@@ -65,14 +82,32 @@ def fit_models(x_array,
     eb0 = results.bse[0]
     rss_linear = results.ssr
     
-    # CASE 2 fit: 1 breakpoint
-    fit2 = piecewise_regression.main.Fit(x, y, n_boot=n_boot, n_breakpoints=1, min_distance_to_edge=0.05)
-    rss_1break = fit2.get_results()["rss"] if fit2.get_results()["converged"] else np.inf
-    
-    # CASE 3 fit: 2 breakpoints
-    fit3 = piecewise_regression.main.Fit(x, y, n_boot=n_boot, n_breakpoints=2, min_distance_to_edge=0.05, 
-                                         min_distance_between_breakpoints=0.20, start_values=[0.5, 1.5])
-    rss_2break = fit3.get_results()["rss"] if fit3.get_results()["converged"] else np.inf
+    # CASE 2, 3 or 4 with 1, 2 or 3 breakpoints
+    if n_break not in [2, 3]:
+        raise ValueError("Default = 2 breaks. You can choose only 3 breaks.")
+    else: 
+        fits = {}
+        rss_values = []
+
+        max_breaks = n_break
+
+        for n in range(1, max_breaks + 1):
+
+            fit = piecewise_regression.main.Fit(
+                x,
+                y,
+                n_boot=n_boot,
+                n_breakpoints=n,
+                min_distance_to_edge=0.05,
+                min_distance_between_breakpoints=0.20
+            )
+
+            fits[n] = fit
+
+            if fit.get_results()["converged"]:
+                rss_values.append(fit.get_results()["rss"])
+            else:
+                rss_values.append(np.inf)
 
     # Functions for AIC
     def llf_(X, rss):
@@ -94,50 +129,50 @@ def fit_models(x_array,
         return aic
         
     AIC1 = aic_final(x, rss_linear, 2)
-    AIC2 = aic_final(x, rss_1break, 4)
-    AIC3 = aic_final(x, rss_2break, 6)
-
+    AIC2 = aic_final(x, rss_values[0], 4)
+    AIC3 = aic_final(x, rss_values[1], 6)
+    
     # Selection of the best model
-    AICs = np.array([AIC1, AIC2, AIC3])
-    k = np.array([2,4,6])
+    if n_break == 2:
+        AICs = np.array([AIC1, AIC2, AIC3])
+        k = np.array([2,4,6])
+    else:
+        AIC4 = aic_final(x, rss_values[2], 8)
+        AICs = np.array([AIC1, AIC2, AIC3, AIC4])
+        k = np.array([2,4,6,8])
 
+    # ---------------------------------------------------------
+    # AIC selection
+    # ---------------------------------------------------------
     delta = AICs - np.min(AICs)
 
-    weights = np.exp(-0.5*delta)
+    weights = np.exp(-0.5 * delta)
     weights /= np.sum(weights)
 
-    best = np.argmax(weights)
+    # modelos plausíveis
+    candidates = np.where(delta <= 4)[0]
 
-    ratios = weights[best] / weights
-
-    # ignorar o próprio modelo
-    ratios = ratios[np.arange(len(ratios)) != best]
-
-    if np.all(ratios > 2):
-        best_model = best + 1
+    if len(candidates) == 1:
+        best_model = candidates[0] + 1
     else:
-        # escolher mais simples entre os plausíveis
-        candidates = np.where(delta <= 2)[0]
+        # escolhe o mais simples
         best_model = candidates[np.argmin(k[candidates])] + 1
         
     if save_model_selection:
     
-        calib_dict = {
-            1: "PP04_O3N2",
-            2: "PP04_N2",
-            3: "M13_O3N2",
-            4: "M13_N2",
-            5: "D16"
-        }
+        calib_dict = CALIBRATORS
 
         if calibrator not in calib_dict:
-            raise ValueError("Invalid calibrator. Use 1=O3N2_PP04, 2=N2_PP04, 3=O3N2_M13, 4=N2_M13, 5=D16.")
+            raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R, 16=NO_F22.")
 
-        calib = calib_dict[calibrator]
+        calib = CALIBRATORS[calibrator]
 
         os.makedirs("model_selection", exist_ok=True)
-
-        model_names = ["Linear", "1-break", "2-break"]
+        
+        if n_break == 2:
+            model_names = ["Linear", "1-break", "2-break"]
+        else:
+            model_names = ["Linear", "1-break", "2-break", "3-break"]
 
         df = pd.DataFrame({
             "model": model_names,
@@ -149,20 +184,34 @@ def fit_models(x_array,
         df["selected"] = False
         df.loc[best_model-1, "selected"] = True
 
-        filepath = os.path.join("model_selection", f"{name}_AIC_{criterion}_{calib}.csv")
+        filepath = os.path.join("model_selection", f"{name}_AIC_{calib}_{criterion}.csv")
 
         df.to_csv(filepath, index=False)
 
-    return {
-        'x': x,
-        'y': y,
-        'ey': ey,
-        'best_case': best_model,
-        'fit1': (a2, ea2, b0, eb0, rss_linear),
-        'fit2': fit2,
-        'fit3': fit3,
-        'AICs': AICs,
-        'delta_AIC': delta,
-        'weights': weights
-    }
-
+    if n_break == 2:
+        return {
+            'x': x,
+            'y': y,
+            'ey': ey,
+            'best_case': best_model,
+            'fit1': (a2, ea2, b0, eb0, rss_linear),
+            'fit2': fits[1],
+            'fit3': fits[2],
+            'AICs': AICs,
+            'delta_AIC': delta,
+            'weights': weights
+        }
+    else:
+        return {
+            'x': x,
+            'y': y,
+            'ey': ey,
+            'best_case': best_model,
+            'fit1': (a2, ea2, b0, eb0, rss_linear),
+            'fit2': fits[1],
+            'fit3': fits[2],
+            'fit4': fits[3],
+            'AICs': AICs,
+            'delta_AIC': delta,
+            'weights': weights
+        }
