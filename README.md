@@ -2,6 +2,8 @@
 
 **fit_abundance** is a Python package designed to compute oxygen abundances and fit radial abundance gradients in galaxies using spectroscopic data from HII regions.
 
+The software implements an automated workflow developed for the analysis presented in Cardoso et al. (2025), including galactocentric distance calculation, extinction correction, oxygen-abundance determination, H II-region selection, gradient fitting, statistical model selection, and diagnostic visualization.
+
 The software provides a fully automated pipeline for abundance-gradient analysis commonly used in extragalactic astronomy.
 
 ---
@@ -12,10 +14,13 @@ The pipeline performs the following steps:
 
 1. Deprojection of HII region positions
 2. Extinction correction of emission-line fluxes
-3. Oxygen abundance calculations using strong-line calibrators
+3. Oxygen and nitrogen abundances calculations using strong-line calibrators
 4. Selection of HII regions based on spectral criteria
 5. Fitting of abundance gradients
 6. Automatic model selection using the Akaike Information Criterion (AIC)
+7. Abundance-gradient plots
+8. Diagnostic BPT diagrams
+9. Optional export of intermediate and final results to CSV files
 
 ---
 
