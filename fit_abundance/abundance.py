@@ -4,9 +4,6 @@ import os
 
 def abundance(
     name,
-    r,
-    HIIREGID,
-    EWHa,
     Hb4861,
     eHb4861,
     Ha6562,
@@ -25,8 +22,12 @@ def abundance(
     eSII6716,
     SII6730,
     eSII6730,
-    calibrator,
-    save_abundance
+    save_abundance,
+    *,
+    calibrator=None,
+    r=None,
+    HIIREGID=None,
+    EWHa=None,
     ):
     
     """
@@ -64,20 +65,20 @@ def abundance(
     ----------
     name : str
         Name of the galaxy.
+    Hb4861, Ha6562, OII3727, OIII4958, OIII5006, NII6548, NII6583, SII6716, SII6730 : array-like
+        Emission-line fluxes.
+    eHb4861, eHa6562m eOII3727, eOIII4958, eOIII5006, eNII6548, eNII6583, eSII6716, eSII6730 : array-like
+        Flux uncertainties.
+    save_abundance : bool
+        If True, saves all corrected fluxes and abundances, along with their respective errors, to a CSV file.
+    calibrator : int
+        Identifier of the abundance calibrator.
     r : array-like
         Galactocentric distance normalized by the effective radius.
     HIIREGID : array-like
         Identifier of each HII region.
     EWHa : array-like
         Equivalent width of Hα (Å).
-    Hb4861, Ha6562, OII3727, OIII4958, OIII5006, NII6548, NII6583, SII6716, SII6730 : array-like
-        Emission-line fluxes.
-    eHb4861, eHa6562m eOII3727, eOIII4958, eOIII5006, eNII6548, eNII6583, eSII6716, eSII6730 : array-like
-        Flux uncertainties.
-    calibrator : int
-        Identifier of the abundance calibrator.
-    save_abundance : bool
-        If True, saves all corrected fluxes and abundances, along with their respective errors, to a CSV file.
 
     Returns
     -------
@@ -90,9 +91,6 @@ def abundance(
     """
     
     # Convert inputs to numpy arrays
-    r = np.asarray(r)
-    HIIREGID = np.asarray(HIIREGID)
-    EWHa = np.asarray(EWHa)
     
     Hb4861 = np.asarray(Hb4861)
     Ha6562 = np.asarray(Ha6562)
@@ -571,69 +569,72 @@ def abundance(
         oh_filtered = np.where(mask, oh, np.nan)
         eoh_filtered = np.where(mask, np.abs(eoh), np.nan)
         return oh_filtered, eoh_filtered
+        
+    # Mask for each calibrator
+    calibrator_masks = {
+        1:  rHb4861 & rHa6562 & rOIII5006 & rNII6583,
+        2:  rHa6562 & rNII6583,
+        3:  rHa6562 & rNII6583,
+        4:  rHb4861 & rHa6562 & rOIII5006 & rNII6583,
+        5:  rHa6562 & rNII6583,
+        6:  rHa6562 & rNII6583 & rSII6716 & rSII6730,
+        7:  rOII3727 & rOIII4958 & rOIII5006,
+        8:  rNII6583 & rOII3727,
+        9:  rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730,
+        10: rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730,
+        11: rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730,
+        12: rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583,
+        13: rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730,
+        14: rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583,
+        15: rOII3727 & rNII6548 & rNII6583,
+        16: rOII3727 & rNII6583,
+    }
+    
+    # Abundances ans errors from each calibrator
+    calibrator_results = {
+        1:  (PP04_O3N2,     ePP04_O3N2),
+        2:  (PP04_N2,       ePP04_N2),
+        3:  (PP04_N2_poly,  ePP04_N2_poly),
+        4:  (M13_O3N2,      eM13_O3N2),
+        5:  (M13_N2,        eM13_N2),
+        6:  (D16,           eD16),
+        7:  (T04,           eT04),
+        8:  (KD02,          eKD02),
+        9:  (P10_ONS,       eP10_ONS),
+        10: (P10_ON,        eP10_ON),
+        11: (PM11,          ePM11),
+        12: (PG16_R,        ePG16_R),
+        13: (PG16_S,        ePG16_S),
+        14: (NH_PG16_R,     eNH_PG16_R),
+        15: (NO_PG16_R,     eNO_PG16_R),
+        16: (NO_F22,        eNO_F22),
+    }
 
-    if calibrator in [1, 4]:  # O3N2 index
-        mask_ok = rHb4861 & rHa6562 & rOIII5006 & rNII6583
-        if calibrator == 1:
-            oh, eoh = apply_mask(PP04_O3N2, ePP04_O3N2, mask_ok)
-        else:
-            oh, eoh = apply_mask(M13_O3N2, eM13_O3N2, mask_ok)
-            
-    elif calibrator in [2, 3, 5]:  # N2 index
-        mask_ok = rHa6562 & rNII6583
-        if calibrator == 2:
-            oh, eoh = apply_mask(PP04_N2, ePP04_N2, mask_ok)
-        elif calibrator == 3:
-            oh, eoh = apply_mask(PP04_N2_poly, ePP04_N2_poly, mask_ok)
-        else:
-            oh, eoh = apply_mask(M13_N2, eM13_N2, mask_ok)
-            
-    elif calibrator == 6:  # D16
-        mask_ok = rHa6562 & rNII6583 & rSII6716 & rSII6730
-        oh, eoh = apply_mask(D16, eD16, mask_ok)
+
+    if calibrator is not None and calibrator not in calibrator_masks:
+        raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R or 16=NO_F22.")
         
-    elif calibrator == 7:  # T04
-        mask_ok = rOII3727 & rOIII4958 & rOIII5006
-        oh, eoh = apply_mask(T04, eT04, mask_ok)
-        
-    elif calibrator == 8:  # KD02
-        mask_ok = rNII6583 & rOII3727
-        oh, eoh = apply_mask(KD02, eKD02, mask_ok)
-        
-    elif calibrator == 9:  # P10_ONS
-        mask_ok = rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730
-        oh, eoh = apply_mask(P10_ONS, eP10_ONS, mask_ok)
-        
-    elif calibrator == 10:  # P10_ON
-        mask_ok = rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730
-        oh, eoh = apply_mask(P10_ON, eP10_ON, mask_ok)
-        
-    elif calibrator == 11:  # PM11
-        mask_ok = rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730
-        oh, eoh = apply_mask(PM11, ePM11, mask_ok)
-        
-    elif calibrator == 12:  # PG16_R
-        mask_ok = rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583
-        oh, eoh = apply_mask(PG16_R, ePG16_R, mask_ok)
-        
-    elif calibrator == 13:  # PG16_S
-        mask_ok = rOIII4958 & rOIII5006 & rNII6548 & rNII6583 & rSII6716 & rSII6730
-        oh, eoh = apply_mask(PG16_S, ePG16_S, mask_ok)
-        
-    elif calibrator == 14:  # NH_PG16_R
-        mask_ok = rOII3727 & rOIII4958 & rOIII5006 & rNII6548 & rNII6583
-        oh, eoh = apply_mask(NH_PG16_R, eNH_PG16_R, mask_ok)
-        
-    elif calibrator == 15:  # NO_PG16_R
-        mask_ok = rOII3727 & rNII6548 & rNII6583
-        oh, eoh = apply_mask(NO_PG16_R, eNO_PG16_R, mask_ok)
-        
-    elif calibrator == 16:  # NO_F22
-        mask_ok = rOII3727 & rNII6583
-        oh, eoh = apply_mask(NO_F22, eNO_F22, mask_ok)
-        
+    # Apply the own mask from each calibrator
+    masked_results = {}
+
+    for cal, (abundance_cal, error_cal) in calibrator_results.items():
+
+        abundance_masked, error_masked = apply_mask(
+            abundance_cal,
+            error_cal,
+            calibrator_masks[cal]
+        )
+
+        masked_results[cal] = (
+            abundance_masked,
+            error_masked
+        )
+    
+    # Result for the calibrator
+    if calibrator == None:
+        oh, eoh = None, None
     else:
-        raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R, 16=NO_F22.")
+        oh, eoh = masked_results[calibrator]
 
     # --- Salve CSV
     results = pd.DataFrame({
@@ -656,48 +657,44 @@ def abundance(
         'eSII6716_cor': eSII6716_cor,
         'SII6730_cor': SII6730_cor,
         'eSII6730_cor': eSII6730_cor,
-        'OH_PP04_O3N2': PP04_O3N2,
-        'eOH_PP04_O3N2': ePP04_O3N2,
-        'OH_PP04_N2': PP04_N2,
-        'eOH_PP04_N2': ePP04_N2,
-        'OH_PP04_N2_poly': PP04_N2_poly,
-        'eOH_PP04_N2_poly': ePP04_N2_poly,
-        'OH_M13_O3N2': M13_O3N2,
-        'eOH_M13_O3N2': eM13_O3N2,
-        'OH_M13_N2': M13_N2,
-        'eOH_M13_N2': eM13_N2,
-        'OH_D16': D16,
-        'eOH_D16': eD16,
-        'OH_T04': T04,
-        'eOH_T04': eT04,
-        'OH_KD02': KD02,
-        'eOH_KD02': eKD02,
-        'OH_P10_ONS': P10_ONS,
-        'eOH_P10_ONS': eP10_ONS,
-        'OH_P10_ON': P10_ON,
-        'eOH_P10_ON': eP10_ON,
-        'OH_PM11': PM11,
-        'eOH_PM11': ePM11,
-        'OH_PG16_R': PG16_R,
-        'eOH_PG16_R': ePG16_R,
-        'OH_PG16_S': PG16_S,
-        'eOH_PG16_S': ePG16_S,
-        'NH_PG16_R': NH_PG16_R,
-        'eNH_PG16_R': eNH_PG16_R,
-        'NO_PG16_R': NO_PG16_R,
-        'eNO_PG16_R': eNO_PG16_R,
-        'NO_F22': NO_F22,
-        'eNO_F22': eNO_F22
+        'OH_PP04_O3N2': masked_results[1][0],
+        'eOH_PP04_O3N2': masked_results[1][1],
+        'OH_PP04_N2': masked_results[2][0],
+        'eOH_PP04_N2': masked_results[2][1],
+        'OH_PP04_N2_poly': masked_results[3][0],
+        'eOH_PP04_N2_poly': masked_results[3][1],
+        'OH_M13_O3N2': masked_results[4][0],
+        'eOH_M13_O3N2': masked_results[4][1],
+        'OH_M13_N2': masked_results[5][0],
+        'eOH_M13_N2': masked_results[5][1],
+        'OH_D16': masked_results[6][0],
+        'eOH_D16': masked_results[6][1],
+        'OH_T04': masked_results[7][0],
+        'eOH_T04': masked_results[7][1],
+        'OH_KD02': masked_results[8][0],
+        'eOH_KD02': masked_results[8][1],
+        'OH_P10_ONS': masked_results[9][0],
+        'eOH_P10_ONS': masked_results[9][1],
+        'OH_P10_ON': masked_results[10][0],
+        'eOH_P10_ON': masked_results[10][1],
+        'OH_PM11': masked_results[11][0],
+        'eOH_PM11': masked_results[11][1],
+        'OH_PG16_R': masked_results[12][0],
+        'eOH_PG16_R': masked_results[12][1],
+        'OH_PG16_S': masked_results[13][0],
+        'eOH_PG16_S': masked_results[13][1],
+        'NH_PG16_R': masked_results[14][0],
+        'eNH_PG16_R': masked_results[14][1],
+        'NO_PG16_R': masked_results[15][0],
+        'eNO_PG16_R': masked_results[15][1],
+        'NO_F22': masked_results[16][0],
+        'eNO_F22': masked_results[16][1],
     })
     
-    
+    # --- Save the corrected flux and abundances in a table
     if save_abundance:
-    
-        os.makedirs("calibrators", exist_ok=True)
-        
-        # --- Save the corrected flux in a table
-        filepath = os.path.join("calibrators", f"{name}_calibrators.csv")
-
+        os.makedirs("abundances", exist_ok=True)
+        filepath = os.path.join("abundances", f"{name}_abundances.csv")
         results.to_csv(filepath, index=False)
-
+        
     return oh, eoh, Ha6562_cor, OIII5006_cor, NII6583_cor
