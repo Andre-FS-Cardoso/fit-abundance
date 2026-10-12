@@ -114,10 +114,13 @@ def points(
     log_NII_Ha = NII6583_cor - Ha6562_cor
     log_OIII_Hb = OIII5006_cor
     EW = EWHa
-
+    
     # --- Specific filters by criterion
     if criterion is None or criterion.lower() == 'none':
         mask = np.ones_like(OH, dtype=bool)
+    
+    if criterion not in ['ST06', 'KA03', 'KE01', 'KE6A', 'CF11', 'EP20']:
+            raise ValueError("Invalid criterion. Use 'ST06', 'KA03', 'KE01', 'KE6A', 'CF11' or 'EP20'.")
         
     elif criterion == 'ST06':
         mask = (log_NII_Ha <= -0.40) & (log_OIII_Hb <= ((-30.787 + 1.1358 * log_NII_Ha + 0.27297 * log_NII_Ha**2)
@@ -146,11 +149,24 @@ def points(
     yerr = np.array(OH_err[mask])
     
     # --- Save output table in CSV (optional)
-    results = pd.DataFrame({
-        'r': x,
-        'OH': y,
-        'eOH': yerr
-    })
+    if calibrator == 14:
+        results = pd.DataFrame({
+            'r': x,
+            'NH': y,
+            'eNH': yerr
+        })
+    elif calibrator in [15, 16]:
+        results = pd.DataFrame({
+            'r': x,
+            'NO': y,
+            'eNO': yerr
+        })
+    else:
+        results = pd.DataFrame({
+            'r': x,
+            'OH': y,
+            'eOH': yerr
+        })
     
     ## Generate the BPT diagram
     
@@ -204,13 +220,16 @@ def points(
         calib_dict = CALIBRATORS
 
         if calibrator not in calib_dict:
-            raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R, 16=NO_F22.")
+            raise ValueError("Invalid calibrator. Use 1=PP04_O3N2, 2=PP04_N2, 3=PP04_N2_poly, 4=M13_O3N2, 5=M13_N2, 6=D16, 7=T04, 8=KD02, 9=P10_ONS, 10=P10_ON, 11=PM11, 12=PG16_R, 13=PG16_S, 14=NH_PG16_R, 15=NO_PG16_R or 16=NO_F22.")
 
         calib = CALIBRATORS[calibrator]
 
-        os.makedirs("abundances", exist_ok=True)
-
-        filepath = os.path.join("abundances", f"{name}_OH_{calib}_{criterion}.csv")
+        os.makedirs("calibrators", exist_ok=True)
+        
+        if calibrator in [14, 15, 16]:
+            filepath = os.path.join("calibrators", f"{name}_{calib}_{criterion}.csv")
+        else:
+            filepath = os.path.join("calibrators", f"{name}_OH_{calib}_{criterion}.csv")
 
         results.to_csv(filepath, index=False)
         
@@ -220,7 +239,7 @@ def points(
         filepath = os.path.join("graphs", f"BPT_{name}.png")
         if not os.path.exists(filepath):
             
-            plt.savefig(filepath, transparent=False, facecolor='w', edgecolor='w')
+            plt.savefig(filepath, transparent=False, facecolor='w', edgecolor='w', dpi=300)
             
     # Show the plot or not
     if show_graph_bpt:
