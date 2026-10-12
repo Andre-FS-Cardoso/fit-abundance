@@ -8,7 +8,7 @@ def distances(
     pa,
     ba,
     d,
-    re
+    re,
     ):
     
     """
@@ -45,6 +45,12 @@ def distances(
         effective radius (r / r_e).
     """
     
+    if not np.isfinite(ba):
+        raise ValueError("ba must be a finite number.")
+
+    if not (0.13 < ba <= 1.0):
+        raise ValueError("ba must satisfy 0.13 < ba <= 1.0.")
+    
     # --- Convert angles to radians
     ra = np.asarray(ra) * np.pi / 180.0
     dec = np.asarray(dec) * np.pi / 180.0
@@ -53,7 +59,7 @@ def distances(
     ra0 = ra0*np.pi / 180.0
     
     # --- Inclination correction
-    cos_i = np.sqrt((ba**2 - 0.13**2) / (1 - 0.13**2))
+    cos_i = np.sqrt((ba**2 - 0.13**2) / (1 - 0.13**2)) + 1e-15
 
     # --- Projected coordinates
     r1 = -(ra - ra0) * np.sin(pa) * np.cos(dec) + (dec - dec0) * np.cos(pa)
