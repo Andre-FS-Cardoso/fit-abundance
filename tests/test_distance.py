@@ -48,3 +48,13 @@ def test_known_value_ngc0309():
     # r must be positive and non-zero
     assert r[0] > 0
     assert isinstance(r, np.ndarray)
+
+def test_invalid_ba():
+    """Checks the value of the ba (sanity test)"""
+    with pytest.raises(ValueError):
+        distances(
+            [10.0], 10.0,
+            [-10.0], -10.0,
+            45.0, 0.1,
+            100.0, 5.0
+        )
