@@ -48,20 +48,28 @@ criterion = "KA03"
 ###############################################################################
 
 results = fit_final(
-        name, HIIREGID, ra, ra0, dec, dec0, pa, ba, d, re, EWHa,
-        Hb4861, eHb4861, Ha6562, eHa6562, OII3727, eOII3727,
-        OIII4958, eOIII4958, OIII5006, eOIII5006, NII6548, eNII6548,
-        NII6583, eNII6583, SII6716, eSII6716, SII6730, eSII6730,
-        calibrator, criterion,
-        n_boot=200,
-        n_break=2,
+        name, HIIREGID=HIIREGID, ra=ra, ra0=ra0, dec=dec, dec0=dec0,
+        pa=pa, ba=ba, d=d, re=re, EWHa=EWHa,
+        Hb4861=Hb4861, eHb4861=eHb4861,
+        Ha6562=Ha6562, eHa6562=eHa6562,
+        OII3727=OII3727, eOII3727=eOII3727,
+        OIII4958=OIII4958, eOIII4958=eOIII4958,
+        OIII5006=OIII5006, eOIII5006=eOIII5006,
+        NII6548=NII6548, eNII6548=eNII6548,
+        NII6583=NII6583, eNII6583=eNII6583,
+        SII6716=SII6716, eSII6716=eSII6716,
+        SII6730=SII6730, eSII6730=eSII6730,
+        calibrator=calibrator,
+        criterion=criterion,
+        n_boot=2000,
+        #plot_mode = 'averaged',
         show_graph_bpt=True,
         save_abundance=True,
         save_oh_criteria=True,
         save_BPT=True,
         save_model_selection=True,
         save_graph=True,
-        show_graph=True
+        show_graph=True,
         )
 
 print(results)
