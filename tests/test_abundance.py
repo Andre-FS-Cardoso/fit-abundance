@@ -40,19 +40,22 @@ def test_calibrator_values():
 
     # Testing PP04 O3N2 (Calibrator 1)
     oh, eoh, ha_c, oiii_c, nii_c = abundance(
-        name, r, HIIREGID, EWHa,
+        name,
         Hb, eHb,
-        Ha, eHa, 
+        Ha, eHa,
         OII3727, eOII3727,
         OIII4958, eOIII4958,
         OIII5006, eOIII5006,
         NII6548, eNII6548,
         NII6583, eNII6583,
-        SII6716, eSII6716, 
+        SII6716, eSII6716,
         SII6730, eSII6730,
+        save_abundance=False,
         calibrator=1,
-        save_abundance=False
-        )
+        r=r,
+        HIIREGID=HIIREGID,
+        EWHa=EWHa,
+    )
     
     # Oxygen abundance typically lies between 7.0 and 9.5
     assert 7.0 <= oh[0] <= 9.5
@@ -60,13 +63,10 @@ def test_calibrator_values():
 
 def test_invalid_calibrator():
     """Checks whether the code raises an error for a non-existent calibrator"""
-    
+
     with pytest.raises(ValueError, match="Invalid calibrator"):
         abundance(
             "Test",
-            [0],
-            ["1"],
-            [1],
             [1], [1],
             [1], [1],
             [1], [1],
@@ -76,6 +76,6 @@ def test_invalid_calibrator():
             [1], [1],
             [1], [1],
             [1], [1],
+            save_abundance=False,
             calibrator=99,
-            save_abundance=False
-            )	
+        )
